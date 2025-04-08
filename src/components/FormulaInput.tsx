@@ -13,9 +13,9 @@ import {
   Box,
   Loader,
   Button,
+  Alert, // Add Alert for error display
 } from '@mantine/core';
 import { useClickOutside, useDebouncedValue } from '@mantine/hooks';
-
 
 const VALID_OPERANDS = ['+', '-', '*', '/', '^', '(', ')'] as const;
 
@@ -23,6 +23,7 @@ const FormulaInput: React.FC = () => {
   const { formula, addTag, removeTag, updateTag, clearFormula } = useFormulaStore();
   const [inputValue, setInputValue] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useClickOutside(() => setShowSuggestions(false));
 
@@ -71,6 +72,7 @@ const FormulaInput: React.FC = () => {
       !/^-?\d+\/\d+$/.test(trimmed) &&
       trimmed.length >= 1
     );
+    setError(null); // Clear error on input change
   }, []);
 
   const handleKeyDown = useCallback(
@@ -96,6 +98,8 @@ const FormulaInput: React.FC = () => {
         setInputValue('');
         setShowSuggestions(false);
         if (e.key === ' ') e.preventDefault();
+      } else if (e.key === 'Enter' && type === 'tag' && !isValidNextType(type, lastTag)) {
+        setError('Please add an operand (e.g., +, -, *, /) and press "space" before adding another tag.');
       }
     },
     [inputValue, formula, allSuggestions, addTag, removeTag, getTagType, isValidNextType]
@@ -104,14 +108,16 @@ const FormulaInput: React.FC = () => {
   const handleSuggestionClick = useCallback(
     (suggestion: Suggestion) => {
       const lastTag = formula[formula.length - 1];
-      if (!lastTag || lastTag.type === 'operand') {
+      if (isValidNextType('tag', lastTag)) {
         addTag(suggestion.name, 'tag', suggestion);
         setInputValue('');
         setShowSuggestions(false);
         inputRef.current?.focus();
+      } else {
+        setError('Please add an operand (e.g., +, -, *, /) before adding another tag.');
       }
     },
-    [formula, addTag]
+    [formula, addTag, isValidNextType]
   );
 
   const handleDropdownChange = useCallback(
@@ -177,6 +183,11 @@ const FormulaInput: React.FC = () => {
 
   return (
     <Paper shadow="sm" p="md" withBorder style={{ margin: '0 auto', width: '70vw' }}>
+      {error && (
+        <Alert color="red" mb="md" title="Error">
+          {error}
+        </Alert>
+      )}
       <Group align="center" style={{ flexWrap: 'wrap', gap: 8 }}>
         {formula.map((tag) => (
           <Group key={tag.id} gap={4}>
@@ -196,9 +207,7 @@ const FormulaInput: React.FC = () => {
                 />
               </Group>
             ) : (
-              <Text variant="outline">
-                {tag.value}
-              </Text>
+              <Text variant="outline">{tag.value}</Text>
             )}
           </Group>
         ))}
@@ -210,13 +219,20 @@ const FormulaInput: React.FC = () => {
             onKeyDown={handleKeyDown}
             placeholder="Add tag, number (e.g., -5, 1/2, 3.14), or operand..."
             size="sm"
+            style={{
+              input: {
+                width: 200,
+                border: error ? '1px solid red' : 'none', // Highlight input on error
+                outline: 'none',
+              },
+            }}
           />
           {showSuggestions && (
             <Paper
               ref={suggestionsRef}
               shadow="sm"
               p="xs"
-              style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, maxHeight: 200, overflowY: 'auto' }}
+              style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, maxHeight: 200, overflowY: 'auto', width: '200px' }}
             >
               {isLoading ? (
                 <Loader size="sm" />
