@@ -1,25 +1,29 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import FormulaInput from './components/FormulaInput';
+import {Card, Flex, List, MantineProvider} from "@mantine/core";
+import './App.css'
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <MantineProvider>
+        <div className="App">
+          <Flex direction="column" gap='xl'>
+            <Card withBorder shadow="md">
+              <h1>Tip</h1>
+              <List center={false}>
+                <List.Item>Type tag name or category</List.Item>
+                <List.Item>Type operand for calculation and press space button</List.Item>
+                <List.Item>Type another one tag</List.Item>
+              </List>
+            </Card>
+            <FormulaInput/>
+          </Flex>
+        </div>
+      </MantineProvider>
+    </QueryClientProvider>
   );
 }
 
