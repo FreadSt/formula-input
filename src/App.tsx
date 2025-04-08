@@ -18,7 +18,7 @@ function App() {
               }}>
                 <List.Item>Type tag name or category</List.Item>
                 <List.Item>Type operand for calculation and press space button</List.Item>
-                <List.Item>Type another one tag</List.Item>
+                <List.Item>Type another one tag or number</List.Item>
               </List>
             </Card>
             <FormulaInput/>
