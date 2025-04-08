@@ -16,6 +16,7 @@ import {
 } from '@mantine/core';
 import { useClickOutside, useDebouncedValue } from '@mantine/hooks';
 
+
 const VALID_OPERANDS = ['+', '-', '*', '/', '^', '(', ')'] as const;
 
 const FormulaInput: React.FC = () => {
